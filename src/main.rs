@@ -67,11 +67,11 @@ async fn get_roster(path: web::Path<(String, String)>) -> Result<impl Responder>
     };
 
     // access relevant data
-    let res = &data[&team.to_string()][&year.to_string()]["Roster"];
+    let res = &data[&team][&year]["Roster"];
 
     if res.is_null() {
         println!("{}", format!("Roster Data was null for {} - {}", year, team));
-        let res_msg = format!("Roster for the {} - {} was not found.", year.to_string(), team.to_string());
+        let res_msg = format!("Roster for the {} - {} was not found.", year, team);
         return Ok(HttpResponse::NotFound().body(res_msg));
     }
 
@@ -95,11 +95,11 @@ async fn get_schedule(path: web::Path<(String, String)>) -> Result<impl Responde
     };
 
     // access relevant data
-    let res = &data[&team.to_string()][&year.to_string()]["Schedule"];
+    let res = &data[&team][&year]["Schedule"];
 
     if res.is_null() {
         println!("{}", format!("Schedule Data was null for {} - {}", year, team));
-        let res_msg = format!("Schedule for the {} - {} was not found.", year.to_string(), team.to_string());
+        let res_msg = format!("Schedule for the {} - {} was not found.", year, team);
         return Ok(HttpResponse::NotFound().body(res_msg));
     }
 
