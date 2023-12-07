@@ -1,8 +1,6 @@
-use std::fs;
+use actix_web::{get, web, Result, Responder, HttpResponse};
 
-use actix_web::{get, web, Result, Responder};
-use serde_json::Value;
-
+mod file_actions;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -29,16 +27,27 @@ async fn get_team_year(path: web::Path<(String, String)>) -> Result<impl Respond
     // parse url params
     let (team, year) = path.into_inner();
 
-    // Grab JSON file
-    let file_path = "./allTeamData.json".to_owned();
-    let contents = fs::read_to_string(file_path).expect("Couldn't find or load that file.");
-    // let data: NbaData = serde_json::from_str(&contents).unwrap();
-    let data: Value = serde_json::from_str(&contents).expect("OP");
+    // Grab JSON data
+    let data_result = file_actions::get_json();
+
+    // Parse out data/error
+    let data = match data_result {
+        Ok(data) => data,
+        Err(error) => {
+            println!("ERROR: {:?}", error);
+            return Ok(HttpResponse::InternalServerError().body("API Error"))},
+    };
 
     // access relevant data
-    let res = &data[&team.to_string()][&year.to_string()];
+    let res = &data[&team][&year];
 
-    Ok(format!("{}", res))
+    if res.is_null() {
+        println!("{}", format!("Team Data was null for {} - {}", year, team));
+        let res_msg = format!("Team data for the {} - {} was not found.", year, team);
+        return Ok(HttpResponse::NotFound().body(res_msg));
+    }
+
+    Ok(HttpResponse::Ok().body(res.to_string()))
 }
 
 #[get("/v1/nba/{team}/{year}/roster")]
@@ -46,16 +55,27 @@ async fn get_roster(path: web::Path<(String, String)>) -> Result<impl Responder>
     // parse url params
     let (team, year) = path.into_inner();
 
-    // Grab JSON file
-    let file_path = "./allTeamData.json".to_owned();
-    let contents = fs::read_to_string(file_path).expect("Couldn't find or load that file.");
-    // let data: NbaData = serde_json::from_str(&contents).unwrap();
-    let data: Value = serde_json::from_str(&contents).expect("OP");
+    // Grab JSON data
+    let data_result = file_actions::get_json();
+
+    // Parse out data/error
+    let data = match data_result {
+        Ok(data) => data,
+        Err(error) => {
+            println!("ERROR: {:?}", error);
+            return Ok(HttpResponse::InternalServerError().body("API Error"))},
+    };
 
     // access relevant data
     let res = &data[&team.to_string()][&year.to_string()]["Roster"];
 
-    Ok(format!("{}", res))
+    if res.is_null() {
+        println!("{}", format!("Roster Data was null for {} - {}", year, team));
+        let res_msg = format!("Roster for the {} - {} was not found.", year.to_string(), team.to_string());
+        return Ok(HttpResponse::NotFound().body(res_msg));
+    }
+
+    Ok(HttpResponse::Ok().body(res.to_string()))
 }
 
 #[get("/v1/nba/{team}/{year}/schedule")]
@@ -63,15 +83,26 @@ async fn get_schedule(path: web::Path<(String, String)>) -> Result<impl Responde
     // parse url params
     let (team, year) = path.into_inner();
 
-    // Grab JSON file
-    let file_path = "./allTeamData.json".to_owned();
-    let contents = fs::read_to_string(file_path).expect("Couldn't find or load that file.");
-    // let data: NbaData = serde_json::from_str(&contents).unwrap();
-    let data: Value = serde_json::from_str(&contents).expect("OP");
+    // Grab JSON data
+    let data_result = file_actions::get_json();
+
+    // Parse out data/error
+    let data = match data_result {
+        Ok(data) => data,
+        Err(error) => {
+            println!("ERROR: {:?}", error);
+            return Ok(HttpResponse::InternalServerError().body("API Error"))},
+    };
 
     // access relevant data
     let res = &data[&team.to_string()][&year.to_string()]["Schedule"];
 
-    Ok(format!("{}", res))
+    if res.is_null() {
+        println!("{}", format!("Schedule Data was null for {} - {}", year, team));
+        let res_msg = format!("Schedule for the {} - {} was not found.", year.to_string(), team.to_string());
+        return Ok(HttpResponse::NotFound().body(res_msg));
+    }
+
+    Ok(HttpResponse::Ok().body(res.to_string()))
 }
 
