@@ -11,6 +11,7 @@ async fn main() -> std::io::Result<()> {
         .service(get_team_year)
         .service(get_roster)
         .service(get_schedule)
+        .service(get_player)
         )
             .bind(("127.0.0.1", 8080))?
             .run()
@@ -100,6 +101,35 @@ async fn get_schedule(path: web::Path<(String, String)>) -> Result<impl Responde
     if res.is_null() {
         println!("{}", format!("Schedule Data was null for {} - {}", year, team));
         let res_msg = format!("Schedule for the {} - {} was not found.", year, team);
+        return Ok(HttpResponse::NotFound().body(res_msg));
+    }
+
+    Ok(HttpResponse::Ok().body(res.to_string()))
+}
+
+
+#[get("/v1/nba/{team}/{year}/{player}")]
+async fn get_player(path: web::Path<(String, String, String)>) -> Result<impl Responder> {
+    // parse url params
+    let (team, year, player) = path.into_inner();
+
+    // Grab JSON data
+    let data_result = file_actions::get_json();
+
+    // Parse out data/error
+    let data = match data_result {
+        Ok(data) => data,
+        Err(error) => {
+            println!("ERROR: {:?}", error);
+            return Ok(HttpResponse::InternalServerError().body("API Error"))},
+    };
+
+    // access relevant data
+    let res = &data[&team][&year]["Roster"]["players"][&player];
+
+    if res.is_null() {
+        println!("{}", format!("Player Data was null for {}: {} - {}", player, year, team));
+        let res_msg = format!("Player Data for {}: {} - {} was not found.", player, year, team);
         return Ok(HttpResponse::NotFound().body(res_msg));
     }
 
