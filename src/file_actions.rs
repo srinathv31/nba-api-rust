@@ -1,16 +1,11 @@
-use std::{fs, env};
+use std::{fs, env, path::Path};
 use serde_json::{Value, Error};
 
 pub fn get_json() -> Result<Value, Box<dyn std::error::Error>> {
     // Grab JSON file
-    // Get the path to the executable
-    let mut exe_path = env::current_exe()?;
-    
-    // Navigate to the parent directory of the executable
-    exe_path.pop();
+    let cargo_manifest_dir = env::var("CARGO_MANIFEST_DIR")?;
 
-    // Construct the full path to the JSON file
-    let file_path = exe_path.join("allTeamData.json");
+    let file_path = Path::new(&cargo_manifest_dir).join("allTeamData.json");
 
     println!("{}", file_path.display());
 
