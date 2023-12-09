@@ -3,13 +3,15 @@ use serde_json::{Value, Error};
 
 pub fn get_json() -> Result<Value, Box<dyn std::error::Error>> {
     // Grab JSON file
-    println!("Current working directory: {:?}", std::env::current_dir());
-    let paths = fs::read_dir("./").unwrap();
+    // Get the path to the executable
+    let mut exe_path = env::current_exe()?;
+    
+    // Navigate to the parent directory of the executable
+    exe_path.pop();
 
-    for path in paths {
-        println!("Name: {}", path.unwrap().path().display())
-    }
-    let file_path = Path::new("allTeamData.json").canonicalize()?.to_str().unwrap().to_owned();
+    // Construct the full path to the JSON file
+    let file_path = exe_path.join("allTeamData.json");
+
     let contents_result = fs::read_to_string(file_path);
 
     let contents = match contents_result {
