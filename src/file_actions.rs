@@ -12,6 +12,8 @@ pub fn get_json() -> Result<Value, Box<dyn std::error::Error>> {
     // Construct the full path to the JSON file
     let file_path = exe_path.join("allTeamData.json");
 
+    println!("{}", file_path.display());
+
     let contents_result = fs::read_to_string(file_path);
 
     let contents = match contents_result {
